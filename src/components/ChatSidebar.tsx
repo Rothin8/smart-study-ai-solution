@@ -12,7 +12,7 @@ import {
   SidebarGroupLabel,
   SidebarGroupContent
 } from "@/components/ui/sidebar";
-import { MessageSquare, ChevronRight } from "lucide-react";
+import { MessageSquare, PlusCircle, ChevronRight } from "lucide-react";
 import ClassBoardSelector from "@/components/ClassBoardSelector";
 
 const ChatSidebar = () => {
@@ -69,8 +69,8 @@ const ChatSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={clearChat} tooltip="Start new chat">
-                  <MessageSquare />
+                <SidebarMenuButton onClick={clearChat} tooltip="Start new chat" className="rounded-md">
+                  <PlusCircle size={18} />
                   <span>New Chat</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -88,7 +88,7 @@ const ChatSidebar = () => {
                     <div className="text-xs text-gray-500 ml-2 mb-1">{date}</div>
                     {contents.map((content, index) => (
                       <SidebarMenuItem key={`${date}-${index}`}>
-                        <SidebarMenuButton>
+                        <SidebarMenuButton className="rounded-md">
                           <MessageSquare size={16} />
                           <span className="truncate">{content.substring(0, 25)}{content.length > 25 ? '...' : ''}</span>
                         </SidebarMenuButton>

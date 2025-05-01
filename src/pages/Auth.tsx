@@ -16,8 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Logo from "@/components/Logo";
 
 // Schema for login form
 const loginSchema = z.object({
@@ -158,7 +158,11 @@ const Auth = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <div className="bg-white py-4 px-6 shadow-sm">
+        <div className="container mx-auto flex justify-center">
+          <Logo size="large" />
+        </div>
+      </div>
       
       <main className="flex-grow flex items-center justify-center py-12 px-6 hero-pattern">
         <div className="w-full max-w-md animate-fade-in">
@@ -195,7 +199,7 @@ const Auth = () => {
                   
                   <Button
                     type="submit"
-                    className="w-full bg-chatbot hover:bg-chatbot/90"
+                    className="w-full bg-chatbot hover:bg-chatbot/90 rounded-full"
                     disabled={isLoading}
                   >
                     {isLoading ? "Verifying..." : "Verify OTP"}
@@ -204,7 +208,7 @@ const Auth = () => {
                   <Button
                     type="button"
                     variant="ghost"
-                    className="w-full"
+                    className="w-full rounded-full"
                     onClick={() => setShowOtp(false)}
                     disabled={isLoading}
                   >
@@ -214,12 +218,12 @@ const Auth = () => {
               </Form>
             ) : (
               <>
-                {/* Add Sign In / Sign Up buttons */}
+                {/* Sign In / Sign Up buttons */}
                 <div className="flex gap-2 mb-6">
                   <Button
                     type="button"
                     variant={activeAuthMethod === "login" ? "default" : "outline"}
-                    className={`w-1/2 ${activeAuthMethod === "login" ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
+                    className={`w-1/2 rounded-full ${activeAuthMethod === "login" ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
                     onClick={() => setActiveAuthMethod("login")}
                   >
                     Sign In
@@ -227,7 +231,7 @@ const Auth = () => {
                   <Button
                     type="button"
                     variant={activeAuthMethod === "register" ? "default" : "outline"}
-                    className={`w-1/2 ${activeAuthMethod === "register" ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
+                    className={`w-1/2 rounded-full ${activeAuthMethod === "register" ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
                     onClick={() => setActiveAuthMethod("register")}
                   >
                     Sign Up
@@ -274,7 +278,7 @@ const Auth = () => {
                           
                           <Button
                             type="submit"
-                            className="w-full bg-chatbot hover:bg-chatbot/90"
+                            className="w-full bg-chatbot hover:bg-chatbot/90 rounded-full"
                             disabled={isLoading}
                           >
                             {isLoading ? "Signing in..." : "Sign In"}
@@ -342,7 +346,7 @@ const Auth = () => {
                           
                           <Button
                             type="submit"
-                            className="w-full bg-chatbot hover:bg-chatbot/90"
+                            className="w-full bg-chatbot hover:bg-chatbot/90 rounded-full"
                             disabled={isLoading}
                           >
                             {isLoading ? "Creating Account..." : "Create Account"}
@@ -371,7 +375,7 @@ const Auth = () => {
                         
                         <Button
                           type="submit"
-                          className="w-full bg-chatbot hover:bg-chatbot/90"
+                          className="w-full bg-chatbot hover:bg-chatbot/90 rounded-full"
                           disabled={isLoading}
                         >
                           {isLoading ? "Sending OTP..." : "Send OTP"}

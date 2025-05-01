@@ -1,163 +1,131 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Session, User } from '@supabase/supabase-js';
 import { useToast } from "@/hooks/use-toast";
 
-type User = {
-  id: string;
-  email?: string;
-  phone?: string;
-  name?: string;
-};
-
 type AuthContextType = {
-  user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  user: User | null;
+  session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithPhone: (phone: string, otp: string) => Promise<void>;
   signUp: (email: string, password: string, name: string) => Promise<void>;
-  signUpWithPhone: (phone: string, name: string) => Promise<void>;
-  verifyOTP: (otp: string) => Promise<void>;
-  signOut: () => void;
+  signOut: () => Promise<void>;
   requestOTP: (phone: string) => Promise<void>;
+  verifyOTP: (otp: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [tempPhone, setTempPhone] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [phoneForOTP, setPhoneForOTP] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    // In a real application, we would check for existing session
-    const checkAuthStatus = () => {
-      const storedUser = localStorage.getItem("solution_ai_user");
-      
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
       }
-      
-      setIsLoading(false);
-    };
+    );
 
-    checkAuthStatus();
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      // In a real app, we would make an API call to authenticate
-      // For now, simulate a successful login
-      const newUser = {
-        id: `user_${Date.now()}`,
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        name: email.split('@')[0],
-      };
-      
-      setUser(newUser);
-      localStorage.setItem("solution_ai_user", JSON.stringify(newUser));
-      
-      toast({
-        title: "Success",
-        description: "You have successfully signed in!",
+        password
       });
-      
-      navigate("/subscription");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign in. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const signInWithPhone = async (phone: string, otp: string) => {
-    try {
-      setIsLoading(true);
-      // In a real app, verify OTP with backend
-      // For now, simulate a successful login
-      const newUser = {
-        id: `user_${Date.now()}`,
-        phone,
-        name: `User ${phone.slice(-4)}`,
-      };
-      
-      setUser(newUser);
-      localStorage.setItem("solution_ai_user", JSON.stringify(newUser));
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Success",
-        description: "You have successfully signed in!",
+        description: "You have signed in successfully!",
       });
-      
-      navigate("/subscription");
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to sign in. Please try again.",
+        description: error.message || "Failed to sign in. Please try again.",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
-      setTempPhone(null);
     }
   };
 
   const signUp = async (email: string, password: string, name: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      // In a real app, we would make an API call to register
-      // For now, simulate a successful registration
-      const newUser = {
-        id: `user_${Date.now()}`,
+      const { error, data } = await supabase.auth.signUp({
         email,
-        name,
-      };
-      
-      setUser(newUser);
-      localStorage.setItem("solution_ai_user", JSON.stringify(newUser));
-      
-      toast({
-        title: "Success",
-        description: "Your account has been created!",
+        password,
+        options: {
+          data: {
+            name
+          }
+        }
       });
-      
-      navigate("/subscription");
-    } catch (error) {
+
+      if (error) {
+        throw error;
+      }
+
+      // Check if email confirmation is required
+      if (data?.user && !data.session) {
+        toast({
+          title: "Check your email",
+          description: "We've sent you a verification link to complete your signup.",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: "Your account has been created successfully!",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signUpWithPhone = async (phone: string, name: string) => {
+  const signOut = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      // In a real app, we would make an API call to register with phone
-      // For now, store the phone temporarily and request OTP
-      setTempPhone(phone);
-      
-      toast({
-        title: "OTP Sent",
-        description: "Please verify your phone number with the OTP sent.",
-      });
-      
-      // In a real application, this would trigger an OTP to be sent
-    } catch (error) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to create account. Please try again.",
+        description: error.message || "Failed to sign out. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -166,88 +134,92 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const requestOTP = async (phone: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      setTempPhone(phone);
-      
+      // Format phone number if needed
+      let formattedPhone = phone;
+      if (!phone.startsWith('+')) {
+        formattedPhone = `+${phone}`;
+      }
+
+      setPhoneForOTP(formattedPhone);
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone
+      });
+
+      if (error) {
+        throw error;
+      }
+
       toast({
         title: "OTP Sent",
-        description: "An OTP has been sent to your phone number.",
+        description: `We've sent a verification code to ${formattedPhone}`,
       });
-      
-      // In a real application, this would trigger an OTP to be sent
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to send OTP. Please try again.",
+        description: error.message || "Failed to send OTP. Please try again.",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
   const verifyOTP = async (otp: string) => {
-    try {
-      setIsLoading(true);
-      
-      if (!tempPhone) {
-        throw new Error("No phone number found");
-      }
-      
-      // In a real app, verify OTP with backend
-      // For now, simulate a successful verification
-      const newUser = {
-        id: `user_${Date.now()}`,
-        phone: tempPhone,
-        name: `User ${tempPhone.slice(-4)}`,
-      };
-      
-      setUser(newUser);
-      localStorage.setItem("solution_ai_user", JSON.stringify(newUser));
-      
-      toast({
-        title: "Success",
-        description: "Phone number verified successfully!",
-      });
-      
-      navigate("/subscription");
-    } catch (error) {
+    if (!phoneForOTP) {
       toast({
         title: "Error",
-        description: "Failed to verify OTP. Please try again.",
+        description: "No phone number found for verification. Please request a new OTP.",
         variant: "destructive",
       });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        phone: phoneForOTP,
+        token: otp,
+        type: 'sms'
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "You have signed in successfully!",
+      });
+
+      setPhoneForOTP(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Invalid verification code. Please try again.",
+        variant: "destructive",
+      });
+      throw error;
     } finally {
       setIsLoading(false);
-      setTempPhone(null);
     }
-  };
-
-  const signOut = () => {
-    setUser(null);
-    localStorage.removeItem("solution_ai_user");
-    navigate("/");
-    
-    toast({
-      title: "Signed out",
-      description: "You have been signed out of your account.",
-    });
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
         isAuthenticated: !!user,
         isLoading,
+        user,
+        session,
         signIn,
-        signInWithPhone,
         signUp,
-        signUpWithPhone,
-        verifyOTP,
         signOut,
         requestOTP,
+        verifyOTP
       }}
     >
       {children}

@@ -1,12 +1,12 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import FeatureCard from "@/components/FeatureCard";
 import { BookOpen, MessageSquare, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import Logo from "@/components/Logo";
 
 const Landing = () => {
   const { isAuthenticated } = useAuth();
@@ -14,7 +14,11 @@ const Landing = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar />
+      <nav className="bg-white py-4 px-6 shadow-sm">
+        <div className="container mx-auto flex justify-center">
+          <Logo size="large" />
+        </div>
+      </nav>
       
       <main className="flex-grow">
         {/* Hero Section */}
@@ -36,26 +40,26 @@ const Landing = () => {
                   {isAuthenticated ? (
                     isSubscribed ? (
                       <Link to="/chat">
-                        <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
+                        <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8 rounded-full">
                           Start Getting Your Solutions
                         </Button>
                       </Link>
                     ) : (
                       <Link to="/subscription">
-                        <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
+                        <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8 rounded-full">
                           Get Started
                         </Button>
                       </Link>
                     )
                   ) : (
                     <Link to="/auth?tab=register">
-                      <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
+                      <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8 rounded-full">
                         Get Started
                       </Button>
                     </Link>
                   )}
                   <Link to="/subscription">
-                    <Button variant="outline" className="w-full sm:w-auto text-lg py-6 px-8">
+                    <Button variant="outline" className="w-full sm:w-auto text-lg py-6 px-8 rounded-full">
                       View Plans
                     </Button>
                   </Link>

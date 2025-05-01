@@ -1,7 +1,6 @@
 
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -10,20 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useChat } from "@/contexts/ChatContext";
 import { 
-  SidebarProvider, 
-  Sidebar, 
-  SidebarContent, 
-  SidebarHeader,
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarTrigger
+  SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { MessageSquare } from "lucide-react";
+import { Download, ArrowLeft } from "lucide-react";
 import ChatSidebar from "@/components/ChatSidebar";
+import Logo from "@/components/Logo";
 
 const Chat = () => {
   const { isAuthenticated } = useAuth();
@@ -54,59 +45,89 @@ const Chat = () => {
   }, [messages]);
 
   const isReady = selectedClass && selectedBoard;
+  
+  const goBack = () => {
+    navigate('/');
+  };
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="flex flex-col min-h-screen">
-        <Navbar />
+        <header className="bg-white py-3 px-6 shadow-sm">
+          <div className="container mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <Logo size="large" showTagline={false} />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={goBack} 
+                className="flex items-center rounded-full"
+              >
+                <ArrowLeft className="mr-1" size={16} />
+                <span className="hidden sm:inline">Home</span>
+              </Button>
+              
+              {messages.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={downloadChatHistory} 
+                  className="rounded-full"
+                >
+                  <Download size={16} />
+                  <span className="hidden sm:inline ml-1">Export</span>
+                </Button>
+              )}
+            </div>
+          </div>
+        </header>
         
-        <main className="flex-grow py-6 px-0 md:px-0 bg-gray-50">
+        <main className="flex-grow py-0 px-0 bg-gray-50">
           <div className="flex h-[calc(100vh-8rem)]">
             <ChatSidebar />
             
-            <div className="flex-1 container mx-auto max-w-5xl px-4">
-              <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-2">
-                  <SidebarTrigger />
-                  <h1 className="text-2xl font-bold text-gray-900">Solution.AI Chat</h1>
-                </div>
-                <div className="flex space-x-2">
-                  {messages.length > 0 && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={clearChat}>
-                        New Chat
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={downloadChatHistory}>
-                        Download
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 h-[calc(100%-4rem)]">
+            <div className="flex-1 container mx-auto max-w-5xl px-4">              
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 h-full flex flex-col">
                 {!isReady ? (
-                  <div className="text-center py-12">
+                  <div className="text-center py-12 flex-grow flex flex-col items-center justify-center">
+                    <div className="w-24 h-24 bg-chatbot/10 rounded-full flex items-center justify-center mb-4">
+                      <div className="w-16 h-16 text-chatbot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                      </div>
+                    </div>
                     <h3 className="text-xl font-medium text-gray-800 mb-2">
                       Please Select Your Class and Board
                     </h3>
                     <p className="text-gray-600">
-                      Select your class and board to get personalized assistance
+                      Use the sidebar menu to select your class and board to get personalized assistance
                     </p>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="text-center py-12">
+                  <div className="text-center py-12 flex-grow flex flex-col items-center justify-center">
+                    <div className="w-24 h-24 bg-chatbot/10 rounded-full flex items-center justify-center mb-4">
+                      <div className="w-16 h-16 text-chatbot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                      </div>
+                    </div>
                     <h3 className="text-xl font-medium text-gray-800 mb-2">
-                      Start a New Conversation
+                      Welcome to Solution.AI
                     </h3>
-                    <p className="text-gray-600">
-                      Ask any question related to your studies for Class {selectedClass} {selectedBoard}
+                    <p className="text-gray-600 max-w-md">
+                      Start a conversation by typing a message below. You can ask questions, request information, or just chat about Class {selectedClass} {selectedBoard} topics.
                     </p>
                   </div>
                 ) : (
                   <div
                     ref={chatContainerRef}
-                    className="max-h-[500px] overflow-y-auto mb-4 pr-2"
+                    className="flex-grow overflow-y-auto mb-4 pr-2"
                   >
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />

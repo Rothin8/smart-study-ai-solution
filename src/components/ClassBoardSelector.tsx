@@ -32,7 +32,7 @@ const ClassBoardSelector = () => {
             <Button
               key={classNum}
               variant={selectedClass === classNum ? "default" : "outline"}
-              className={`text-xs py-1 px-2 h-8 ${selectedClass === classNum ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
+              className={`text-xs py-1 px-2 h-8 rounded-md ${selectedClass === classNum ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
               onClick={() => selectClass(classNum)}
             >
               {classNum}
@@ -49,7 +49,7 @@ const ClassBoardSelector = () => {
               <Button
                 key={board}
                 variant={selectedBoard === board ? "default" : "outline"}
-                className={`text-xs py-1 h-8 ${selectedBoard === board ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
+                className={`text-xs py-1 h-8 rounded-md ${selectedBoard === board ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
                 onClick={() => selectBoard(board)}
               >
                 {board}

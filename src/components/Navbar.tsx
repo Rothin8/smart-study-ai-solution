@@ -2,21 +2,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import Logo from "@/components/Logo";
 
 const Navbar = () => {
   const { isAuthenticated, signOut, user } = useAuth();
   const location = useLocation();
   const isOnChatPage = location.pathname === "/chat";
+  const isOnHomePage = location.pathname === "/";
+  const isOnAuthPage = location.pathname === "/auth";
 
   return (
     <nav className="bg-white py-4 px-6 shadow-sm">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-chatbot to-blue-500 flex items-center justify-center text-white font-bold">
-            S
-          </div>
-          <span className="text-xl font-bold text-gray-800">Solution.AI</span>
-        </Link>
+        <Logo size={isOnChatPage ? "large" : "medium"} showTagline={!isOnChatPage} />
         
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
@@ -24,30 +22,35 @@ const Navbar = () => {
               <span className="text-gray-600 hidden md:inline-block">
                 Welcome, {user?.name || "User"}
               </span>
-              {!isOnChatPage && (
+              {isOnChatPage && (
+                <Link to="/">
+                  <Button variant="outline" size="sm" className="rounded-full">Home</Button>
+                </Link>
+              )}
+              {!isOnChatPage && !isOnHomePage && (
                 <>
                   <Link to="/chat">
-                    <Button variant="outline">Chat</Button>
+                    <Button variant="outline" className="rounded-full">Chat</Button>
                   </Link>
-                  <Button variant="ghost" onClick={signOut}>
+                  <Button variant="ghost" onClick={signOut} className="rounded-full">
                     Sign Out
                   </Button>
                 </>
               )}
-              {isOnChatPage && (
-                <Link to="/">
-                  <Button variant="outline">Home</Button>
-                </Link>
-              )}
             </>
           ) : (
             <>
-              <Link to="/auth">
-                <Button variant="outline">Sign In</Button>
-              </Link>
-              <Link to="/auth?tab=register">
-                <Button className="bg-chatbot hover:bg-chatbot/90">Sign Up</Button>
-              </Link>
+              {/* Only show sign in/sign up on non-home and non-auth pages */}
+              {!isOnHomePage && !isOnAuthPage && (
+                <>
+                  <Link to="/auth">
+                    <Button variant="outline" className="rounded-full">Sign In</Button>
+                  </Link>
+                  <Link to="/auth?tab=register">
+                    <Button className="bg-chatbot hover:bg-chatbot/90 rounded-full">Sign Up</Button>
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>
