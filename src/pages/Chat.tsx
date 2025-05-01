@@ -5,11 +5,25 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
-import ClassBoardSelector from "@/components/ClassBoardSelector";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useChat } from "@/contexts/ChatContext";
+import { 
+  SidebarProvider, 
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader,
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarTrigger
+} from "@/components/ui/sidebar";
+import { MessageSquare } from "lucide-react";
+import ChatSidebar from "@/components/ChatSidebar";
 
 const Chat = () => {
   const { isAuthenticated } = useAuth();
@@ -42,44 +56,35 @@ const Chat = () => {
   const isReady = selectedClass && selectedBoard;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      
-      <main className="flex-grow py-6 px-4 md:px-6 bg-gray-50">
-        <div className="container mx-auto max-w-5xl">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">Solution.AI Chat</h1>
-            <div className="flex space-x-2">
-              {messages.length > 0 && (
-                <>
-                  <Button variant="outline" size="sm" onClick={clearChat}>
-                    New Chat
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={downloadChatHistory}>
-                    Download
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="md:col-span-1">
-              <div className="sticky top-6">
-                <ClassBoardSelector />
-                
-                {selectedClass && selectedBoard && (
-                  <div className="mt-4 bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-medium mb-2">Current Selection</h3>
-                    <p className="text-sm text-gray-600">Class: {selectedClass}</p>
-                    <p className="text-sm text-gray-600">Board: {selectedBoard}</p>
-                  </div>
-                )}
-              </div>
-            </div>
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        
+        <main className="flex-grow py-6 px-0 md:px-0 bg-gray-50">
+          <div className="flex h-[calc(100vh-8rem)]">
+            <ChatSidebar />
             
-            <div className="md:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6">
+            <div className="flex-1 container mx-auto max-w-5xl px-4">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger />
+                  <h1 className="text-2xl font-bold text-gray-900">Solution.AI Chat</h1>
+                </div>
+                <div className="flex space-x-2">
+                  {messages.length > 0 && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={clearChat}>
+                        New Chat
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={downloadChatHistory}>
+                        Download
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 md:p-6 h-[calc(100%-4rem)]">
                 {!isReady ? (
                   <div className="text-center py-12">
                     <h3 className="text-xl font-medium text-gray-800 mb-2">
@@ -113,11 +118,11 @@ const Chat = () => {
               </div>
             </div>
           </div>
-        </div>
-      </main>
-      
-      <Footer />
-    </div>
+        </main>
+        
+        <Footer />
+      </div>
+    </SidebarProvider>
   );
 };
 

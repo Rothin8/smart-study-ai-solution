@@ -1,10 +1,12 @@
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const { isAuthenticated, signOut, user } = useAuth();
+  const location = useLocation();
+  const isOnChatPage = location.pathname === "/chat";
 
   return (
     <nav className="bg-white py-4 px-6 shadow-sm">
@@ -22,12 +24,21 @@ const Navbar = () => {
               <span className="text-gray-600 hidden md:inline-block">
                 Welcome, {user?.name || "User"}
               </span>
-              <Link to="/chat">
-                <Button variant="outline">Chat</Button>
-              </Link>
-              <Button variant="ghost" onClick={signOut}>
-                Sign Out
-              </Button>
+              {!isOnChatPage && (
+                <>
+                  <Link to="/chat">
+                    <Button variant="outline">Chat</Button>
+                  </Link>
+                  <Button variant="ghost" onClick={signOut}>
+                    Sign Out
+                  </Button>
+                </>
+              )}
+              {isOnChatPage && (
+                <Link to="/">
+                  <Button variant="outline">Home</Button>
+                </Link>
+              )}
             </>
           ) : (
             <>

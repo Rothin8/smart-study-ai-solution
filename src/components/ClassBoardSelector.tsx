@@ -23,16 +23,16 @@ const ClassBoardSelector = () => {
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-      <h3 className="text-lg font-medium mb-3">Select your class and board</h3>
+      <h3 className="text-sm font-medium mb-3">Select your class and board</h3>
       
       <div className="mb-4">
-        <p className="text-sm text-gray-500 mb-2">Class</p>
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+        <p className="text-xs text-gray-500 mb-2">Class</p>
+        <div className="grid grid-cols-4 gap-1">
           {classes.map((classNum) => (
             <Button
               key={classNum}
               variant={selectedClass === classNum ? "default" : "outline"}
-              className={selectedClass === classNum ? "bg-chatbot hover:bg-chatbot/90" : ""}
+              className={`text-xs py-1 px-2 h-8 ${selectedClass === classNum ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
               onClick={() => selectClass(classNum)}
             >
               {classNum}
@@ -43,13 +43,13 @@ const ClassBoardSelector = () => {
       
       {selectedClass && (
         <div>
-          <p className="text-sm text-gray-500 mb-2">Board</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-xs text-gray-500 mb-2">Board</p>
+          <div className="flex flex-col gap-1">
             {boards.map((board) => (
               <Button
                 key={board}
                 variant={selectedBoard === board ? "default" : "outline"}
-                className={selectedBoard === board ? "bg-chatbot hover:bg-chatbot/90" : ""}
+                className={`text-xs py-1 h-8 ${selectedBoard === board ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
                 onClick={() => selectBoard(board)}
               >
                 {board}
