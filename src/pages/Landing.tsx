@@ -6,9 +6,11 @@ import Footer from "@/components/Footer";
 import FeatureCard from "@/components/FeatureCard";
 import { BookOpen, MessageSquare, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const Landing = () => {
   const { isAuthenticated } = useAuth();
+  const { isSubscribed } = useSubscription();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -23,17 +25,28 @@ const Landing = () => {
                 <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
                   Master Your Studies with AI
                 </h1>
+                <p className="text-lg text-gray-600 mb-2">
+                  Your Study Buddy
+                </p>
                 <p className="text-xl text-gray-600 mb-8">
                   Solution.AI is your personalized study assistant, powered by artificial intelligence. 
                   Get answers, explanations, and help with any subject instantly.
                 </p>
                 <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                   {isAuthenticated ? (
-                    <Link to="/chat">
-                      <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
-                        Start Chatting
-                      </Button>
-                    </Link>
+                    isSubscribed ? (
+                      <Link to="/chat">
+                        <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
+                          Start Getting Your Solutions
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Link to="/subscription">
+                        <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
+                          Get Started
+                        </Button>
+                      </Link>
+                    )
                   ) : (
                     <Link to="/auth?tab=register">
                       <Button className="w-full sm:w-auto bg-chatbot hover:bg-chatbot/90 text-lg py-6 px-8">
@@ -115,15 +128,23 @@ const Landing = () => {
               Join thousands of students who have improved their grades and understanding with Solution.AI.
             </p>
             {isAuthenticated ? (
-              <Link to="/chat">
-                <Button className="bg-white text-chatbot hover:bg-gray-100 text-lg py-6 px-8">
-                  Start Chatting Now
-                </Button>
-              </Link>
+              isSubscribed ? (
+                <Link to="/chat">
+                  <Button className="bg-white text-chatbot hover:bg-gray-100 text-lg py-6 px-8">
+                    Start Getting Your Solutions
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/subscription">
+                  <Button className="bg-white text-chatbot hover:bg-gray-100 text-lg py-6 px-8">
+                    Get Started
+                  </Button>
+                </Link>
+              )
             ) : (
               <Link to="/auth?tab=register">
                 <Button className="bg-white text-chatbot hover:bg-gray-100 text-lg py-6 px-8">
-                  Sign Up For Free
+                  Get Started
                 </Button>
               </Link>
             )}
