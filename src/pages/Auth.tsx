@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -56,6 +55,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "login";
   const [activeTab, setActiveTab] = useState(defaultTab);
+  const [activeAuthMethod, setActiveAuthMethod] = useState("login");
   const [showOtp, setShowOtp] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const { toast } = useToast();
@@ -165,12 +165,12 @@ const Auth = () => {
           <div className="bg-white shadow-xl rounded-xl p-8 border border-gray-200">
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-gray-900">
-                {showOtp ? "Verify OTP" : activeTab === "login" ? "Welcome Back" : "Create an Account"}
+                {showOtp ? "Verify OTP" : activeAuthMethod === "login" ? "Welcome Back" : "Create an Account"}
               </h1>
               <p className="text-gray-600 mt-2">
                 {showOtp
                   ? `Enter the code sent to ${phoneNumber}`
-                  : activeTab === "login"
+                  : activeAuthMethod === "login"
                   ? "Sign in to continue to Solution.AI"
                   : "Start your learning journey with Solution.AI"}
               </p>
@@ -213,172 +213,174 @@ const Auth = () => {
                 </form>
               </Form>
             ) : (
-              <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-2 mb-8">
-                  <TabsTrigger value="login">Email Login</TabsTrigger>
-                  <TabsTrigger value="phone">Phone Login</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login" className="space-y-6">
-                  <Form {...loginForm}>
-                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                      <FormField
-                        control={loginForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="your@email.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={loginForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="******" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <Button
-                        type="submit"
-                        className="w-full bg-chatbot hover:bg-chatbot/90"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? "Signing in..." : "Sign In"}
-                      </Button>
-                      
-                      <div className="text-center">
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("register")}
-                          className="text-sm text-chatbot hover:underline mt-2"
+              <>
+                {/* Add Sign In / Sign Up buttons */}
+                <div className="flex gap-2 mb-6">
+                  <Button
+                    type="button"
+                    variant={activeAuthMethod === "login" ? "default" : "outline"}
+                    className={`w-1/2 ${activeAuthMethod === "login" ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
+                    onClick={() => setActiveAuthMethod("login")}
+                  >
+                    Sign In
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={activeAuthMethod === "register" ? "default" : "outline"}
+                    className={`w-1/2 ${activeAuthMethod === "register" ? "bg-chatbot hover:bg-chatbot/90" : ""}`}
+                    onClick={() => setActiveAuthMethod("register")}
+                  >
+                    Sign Up
+                  </Button>
+                </div>
+              
+                <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
+                  <TabsList className="grid grid-cols-2 mb-8">
+                    <TabsTrigger value="login">Email Login</TabsTrigger>
+                    <TabsTrigger value="phone">Phone Login</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="login" className="space-y-6">
+                    {activeAuthMethod === "login" ? (
+                      <Form {...loginForm}>
+                        <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                          <FormField
+                            control={loginForm.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input type="email" placeholder="your@email.com" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={loginForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                  <Input type="password" placeholder="******" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <Button
+                            type="submit"
+                            className="w-full bg-chatbot hover:bg-chatbot/90"
+                            disabled={isLoading}
+                          >
+                            {isLoading ? "Signing in..." : "Sign In"}
+                          </Button>
+                        </form>
+                      </Form>
+                    ) : (
+                      <Form {...registerForm}>
+                        <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                          <FormField
+                            control={registerForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Your name" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={registerForm.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email</FormLabel>
+                                <FormControl>
+                                  <Input type="email" placeholder="your@email.com" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={registerForm.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                  <Input type="password" placeholder="******" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={registerForm.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Confirm Password</FormLabel>
+                                <FormControl>
+                                  <Input type="password" placeholder="******" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <Button
+                            type="submit"
+                            className="w-full bg-chatbot hover:bg-chatbot/90"
+                            disabled={isLoading}
+                          >
+                            {isLoading ? "Creating Account..." : "Create Account"}
+                          </Button>
+                        </form>
+                      </Form>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="phone" className="space-y-6">
+                    <Form {...phoneForm}>
+                      <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4">
+                        <FormField
+                          control={phoneForm.control}
+                          name="phone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Phone Number</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter your phone number" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <Button
+                          type="submit"
+                          className="w-full bg-chatbot hover:bg-chatbot/90"
+                          disabled={isLoading}
                         >
-                          Don't have an account? Sign Up
-                        </button>
-                      </div>
-                    </form>
-                  </Form>
-                </TabsContent>
-                
-                <TabsContent value="phone" className="space-y-6">
-                  <Form {...phoneForm}>
-                    <form onSubmit={phoneForm.handleSubmit(onPhoneSubmit)} className="space-y-4">
-                      <FormField
-                        control={phoneForm.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Phone Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter your phone number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <Button
-                        type="submit"
-                        className="w-full bg-chatbot hover:bg-chatbot/90"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? "Sending OTP..." : "Send OTP"}
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-                
-                <TabsContent value="register" className="space-y-6">
-                  <Form {...registerForm}>
-                    <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                      <FormField
-                        control={registerForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Your name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={registerForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input type="email" placeholder="your@email.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={registerForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="******" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={registerForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <Input type="password" placeholder="******" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <Button
-                        type="submit"
-                        className="w-full bg-chatbot hover:bg-chatbot/90"
-                        disabled={isLoading}
-                      >
-                        {isLoading ? "Creating Account..." : "Create Account"}
-                      </Button>
-                      
-                      <div className="text-center">
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab("login")}
-                          className="text-sm text-chatbot hover:underline mt-2"
-                        >
-                          Already have an account? Sign In
-                        </button>
-                      </div>
-                    </form>
-                  </Form>
-                </TabsContent>
-              </Tabs>
+                          {isLoading ? "Sending OTP..." : "Send OTP"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                </Tabs>
+              </>
             )}
             
             <div className="mt-6 text-center">
