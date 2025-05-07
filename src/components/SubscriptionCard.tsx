@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 
 interface SubscriptionCardProps {
@@ -20,8 +20,12 @@ const SubscriptionCard = ({
   features,
   recommended = false,
 }: SubscriptionCardProps) => {
-  const { subscriptionType, subscribe } = useSubscription();
+  const { subscriptionType, subscribe, isProcessing } = useSubscription();
   const isCurrentPlan = subscriptionType === type;
+
+  const handleSubscribe = async () => {
+    await subscribe(type);
+  };
 
   return (
     <div
@@ -66,10 +70,19 @@ const SubscriptionCard = ({
             ? "bg-green-500 hover:bg-green-600"
             : "bg-chatbot hover:bg-chatbot/90"
         }`}
-        disabled={isCurrentPlan}
-        onClick={() => subscribe(type)}
+        disabled={isCurrentPlan || isProcessing}
+        onClick={handleSubscribe}
       >
-        {isCurrentPlan ? "Current Plan" : "Subscribe Now"}
+        {isProcessing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing...
+          </>
+        ) : isCurrentPlan ? (
+          "Current Plan"
+        ) : (
+          "Subscribe Now"
+        )}
       </Button>
     </div>
   );

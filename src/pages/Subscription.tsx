@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
+import { loadRazorpayScript } from "@/utils/razorpay";
 
 const Subscription = () => {
   const { isAuthenticated } = useAuth();
@@ -13,6 +14,9 @@ const Subscription = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Load Razorpay script when component mounts
+    loadRazorpayScript();
+    
     // If not authenticated, redirect to auth page
     if (!isAuthenticated) {
       navigate("/auth");
@@ -77,6 +81,9 @@ const Subscription = () => {
               By subscribing, you agree to our Terms of Service and Privacy Policy. 
               Subscriptions automatically renew annually until canceled. 
               You can cancel anytime from your account settings.
+            </p>
+            <p className="text-xs text-gray-400 mt-4">
+              Powered by Razorpay | Secure payment gateway
             </p>
           </div>
         </div>

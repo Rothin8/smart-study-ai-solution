@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { openRazorpayCheckout, RazorpayOptions } from "@/utils/razorpay";
 
 type SubscriptionType = "none" | "basic" | "premium";
 
@@ -11,6 +12,7 @@ type SubscriptionContextType = {
   expiryDate: Date | null;
   subscribe: (type: "basic" | "premium") => Promise<void>;
   cancelSubscription: () => Promise<void>;
+  isProcessing: boolean;
 };
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(u
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [subscriptionType, setSubscriptionType] = useState<SubscriptionType>("none");
   const [expiryDate, setExpiryDate] = useState<Date | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -50,34 +53,66 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // In a real app, this would process payment through a payment gateway
-      // For now, simulate a successful subscription
+      setIsProcessing(true);
 
-      // Set expiry to one year from now
-      const newExpiryDate = new Date();
-      newExpiryDate.setFullYear(newExpiryDate.getFullYear() + 1);
+      // Amount in paise (₹1200 = 120000 paise, ₹1500 = 150000 paise)
+      const amount = type === "basic" ? 120000 : 150000;
       
-      setSubscriptionType(type);
-      setExpiryDate(newExpiryDate);
+      // In a real app, this order_id would come from your backend
+      // For this demo, we're using a mock order ID
+      const mockOrderId = `order_${Date.now()}`;
       
-      localStorage.setItem(
-        `subscription_${user.id}`,
-        JSON.stringify({
-          type,
-          expiry: newExpiryDate.toISOString(),
-        })
-      );
-      
-      toast({
-        title: "Subscription Activated",
-        description: `Your ${type} subscription has been activated!`,
-      });
+      const options: RazorpayOptions = {
+        key: "rzp_test_RG9YwDUQ0QSfXa", // Replace with your Razorpay test key
+        amount: amount,
+        currency: "INR",
+        name: "Solution.AI",
+        description: `${type === "basic" ? "Basic" : "Premium"} Subscription`,
+        order_id: mockOrderId,
+        prefill: {
+          name: user.email?.split('@')[0] || "",
+          email: user.email || "",
+        },
+        theme: {
+          color: "#7152F3"
+        },
+        handler: (response) => {
+          console.log("Payment successful:", response);
+          
+          // Set expiry to one year from now
+          const newExpiryDate = new Date();
+          newExpiryDate.setFullYear(newExpiryDate.getFullYear() + 1);
+          
+          setSubscriptionType(type);
+          setExpiryDate(newExpiryDate);
+          
+          localStorage.setItem(
+            `subscription_${user.id}`,
+            JSON.stringify({
+              type,
+              expiry: newExpiryDate.toISOString(),
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+            })
+          );
+          
+          toast({
+            title: "Subscription Activated",
+            description: `Your ${type} subscription has been activated!`,
+          });
+        },
+      };
+
+      await openRazorpayCheckout(options);
     } catch (error) {
+      console.error("Payment failed:", error);
       toast({
         title: "Error",
-        description: "Failed to process subscription. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process subscription. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -86,8 +121,6 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       // In a real app, this would call an API to cancel the subscription
-      // For now, simulate a successful cancellation
-      
       setSubscriptionType("none");
       setExpiryDate(null);
       
@@ -114,6 +147,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         expiryDate,
         subscribe,
         cancelSubscription,
+        isProcessing,
       }}
     >
       {children}
