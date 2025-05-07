@@ -11,6 +11,9 @@ const Navbar = () => {
   const isOnHomePage = location.pathname === "/";
   const isOnAuthPage = location.pathname === "/auth";
 
+  // Safely extract username from user_metadata or fall back to "User"
+  const displayName = user?.user_metadata?.name || "User";
+
   return (
     <nav className="bg-white py-4 px-6 shadow-sm">
       <div className="container mx-auto flex justify-between items-center">
@@ -20,7 +23,7 @@ const Navbar = () => {
           {isAuthenticated ? (
             <>
               <span className="text-gray-600 hidden md:inline-block">
-                Welcome, {user?.name || "User"}
+                Welcome, {displayName}
               </span>
               {isOnChatPage && (
                 <Link to="/">
