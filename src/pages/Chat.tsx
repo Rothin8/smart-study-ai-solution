@@ -55,8 +55,8 @@ const Chat = () => {
       <div className="flex flex-col min-h-screen">
         <header className="bg-white py-3 px-6 shadow-sm">
           <div className="container mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger />
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="h-9 w-9" />
               <Logo size="large" showTagline={false} />
             </div>
             
