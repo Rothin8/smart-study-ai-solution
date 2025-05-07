@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
 
 type ClassOption = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 type BoardOption = "SEBA" | "CBSE" | "AHSEC";
@@ -133,32 +134,67 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      // Format messages for PDF
-      let content = "# Solution.AI Chat History\n\n";
-      content += `Class: ${selectedClass} | Board: ${selectedBoard}\n\n`;
+      const pdf = new jsPDF();
       
+      // Set title
+      pdf.setFontSize(18);
+      pdf.text("Solution.AI Chat History", 20, 20);
+      
+      // Add class and board information
+      pdf.setFontSize(12);
+      pdf.text(`Class: ${selectedClass} | Board: ${selectedBoard}`, 20, 30);
+      
+      let yPosition = 40;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const margin = 20;
+      const textWidth = pageWidth - (2 * margin);
+      
+      // Add each message to the PDF
       messages.forEach((msg) => {
         const roleText = msg.role === "user" ? "You" : "Solution.AI";
-        const timestamp = msg.timestamp.toLocaleString();
-        content += `## ${roleText} (${timestamp})\n\n${msg.content}\n\n`;
+        const timestamp = new Date(msg.timestamp).toLocaleString();
+        
+        // Add message header
+        pdf.setFontSize(11);
+        pdf.setFont(undefined, 'bold');
+        pdf.text(`${roleText} (${timestamp})`, margin, yPosition);
+        yPosition += 6;
+        
+        // Add message content
+        pdf.setFont(undefined, 'normal');
+        pdf.setFontSize(10);
+        
+        // Split the message content into lines that fit the PDF width
+        const lines = pdf.splitTextToSize(msg.content, textWidth);
+        
+        // Check if adding these lines will exceed the page height
+        if (yPosition + (lines.length * 5) > 280) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        
+        // Add the message content lines
+        pdf.text(lines, margin, yPosition);
+        yPosition += (lines.length * 5) + 10;
+        
+        // Add some space between messages
+        if (yPosition > 280) {
+          pdf.addPage();
+          yPosition = 20;
+        } else {
+          yPosition += 5;
+        }
       });
       
-      // Create a blob and download it
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `solution-ai-chat-${new Date().toISOString().split("T")[0]}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Save the PDF
+      pdf.save(`solution-ai-chat-${new Date().toISOString().split("T")[0]}.pdf`);
       
       toast({
         title: "Success",
-        description: "Chat history downloaded successfully!",
+        description: "Chat history downloaded as PDF successfully!",
       });
     } catch (error) {
+      console.error("PDF generation error:", error);
       toast({
         title: "Error",
         description: "Failed to download chat history.",

@@ -12,7 +12,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Download, ArrowLeft } from "lucide-react";
+import { Download } from "lucide-react";
 import ChatSidebar from "@/components/ChatSidebar";
 import Logo from "@/components/Logo";
 
@@ -45,10 +45,6 @@ const Chat = () => {
   }, [messages]);
 
   const isReady = selectedClass && selectedBoard;
-  
-  const goBack = () => {
-    navigate('/');
-  };
 
   return (
     <SidebarProvider defaultOpen={false}>
@@ -61,16 +57,6 @@ const Chat = () => {
             </div>
             
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={goBack} 
-                className="flex items-center rounded-full"
-              >
-                <ArrowLeft className="mr-1" size={16} />
-                <span className="hidden sm:inline">Home</span>
-              </Button>
-              
               {messages.length > 0 && (
                 <Button 
                   variant="outline" 
@@ -79,7 +65,7 @@ const Chat = () => {
                   className="rounded-full"
                 >
                   <Download size={16} />
-                  <span className="hidden sm:inline ml-1">Export</span>
+                  <span className="hidden sm:inline ml-1">Export PDF</span>
                 </Button>
               )}
             </div>
