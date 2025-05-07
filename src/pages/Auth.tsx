@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -46,10 +47,16 @@ const otpSchema = z.object({
   otp: z.string().min(4, "Please enter a valid OTP"),
 });
 
+// Schema for forgot password
+const forgotPasswordSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 type PhoneFormValues = z.infer<typeof phoneSchema>;
 type OtpFormValues = z.infer<typeof otpSchema>;
+type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
@@ -57,9 +64,10 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [activeAuthMethod, setActiveAuthMethod] = useState("login");
   const [showOtp, setShowOtp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const { toast } = useToast();
-  const { signIn, signUp, requestOTP, verifyOTP, isAuthenticated, isLoading } = useAuth();
+  const { signIn, signUp, requestOTP, verifyOTP, resetPassword, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   // Initialize forms
@@ -92,6 +100,13 @@ const Auth = () => {
     resolver: zodResolver(otpSchema),
     defaultValues: {
       otp: "",
+    },
+  });
+  
+  const forgotPasswordForm = useForm<ForgotPasswordFormValues>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
     },
   });
 
@@ -156,6 +171,24 @@ const Auth = () => {
     }
   };
 
+  // Handle forgot password form submission
+  const onForgotPasswordSubmit = async (values: ForgotPasswordFormValues) => {
+    try {
+      await resetPassword(values.email);
+      toast({
+        title: "Success",
+        description: "Password reset instructions sent to your email.",
+      });
+      setShowForgotPassword(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send reset instructions. Please check your email and try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="bg-white py-4 px-6 shadow-sm">
@@ -169,18 +202,55 @@ const Auth = () => {
           <div className="bg-white shadow-xl rounded-xl p-8 border border-gray-200">
             <div className="text-center mb-6">
               <h1 className="text-2xl font-bold text-gray-900">
-                {showOtp ? "Verify OTP" : activeAuthMethod === "login" ? "Welcome Back" : "Create an Account"}
+                {showForgotPassword ? "Reset Your Password" :
+                 showOtp ? "Verify OTP" : 
+                 activeAuthMethod === "login" ? "Welcome Back" : "Create an Account"}
               </h1>
               <p className="text-gray-600 mt-2">
-                {showOtp
-                  ? `Enter the code sent to ${phoneNumber}`
-                  : activeAuthMethod === "login"
-                  ? "Sign in to continue to Solution.AI"
-                  : "Start your learning journey with Solution.AI"}
+                {showForgotPassword ? "Enter your email to receive reset instructions" :
+                 showOtp ? `Enter the code sent to ${phoneNumber}` :
+                 activeAuthMethod === "login" ? "Sign in to continue to Solution.AI" :
+                 "Start your learning journey with Solution.AI"}
               </p>
             </div>
             
-            {showOtp ? (
+            {showForgotPassword ? (
+              <Form {...forgotPasswordForm}>
+                <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
+                  <FormField
+                    control={forgotPasswordForm.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="your@email.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <Button
+                    type="submit"
+                    className="w-full bg-chatbot hover:bg-chatbot/90 rounded-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Sending Instructions..." : "Send Reset Instructions"}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full rounded-full"
+                    onClick={() => setShowForgotPassword(false)}
+                    disabled={isLoading}
+                  >
+                    Back to Sign In
+                  </Button>
+                </form>
+              </Form>
+            ) : showOtp ? (
               <Form {...otpForm}>
                 <form onSubmit={otpForm.handleSubmit(onOtpSubmit)} className="space-y-4">
                   <FormField
@@ -275,6 +345,17 @@ const Auth = () => {
                               </FormItem>
                             )}
                           />
+                          
+                          <div className="text-right">
+                            <Button 
+                              type="button" 
+                              variant="link" 
+                              className="p-0 h-auto text-chatbot"
+                              onClick={() => setShowForgotPassword(true)}
+                            >
+                              Forgot Password?
+                            </Button>
+                          </div>
                           
                           <Button
                             type="submit"
