@@ -10,7 +10,7 @@ import UserManagement from "@/components/admin/UserManagement";
 import OrderManagement from "@/components/admin/OrderManagement";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminSettings from "@/components/admin/AdminSettings";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldAlert } from "lucide-react";
 
 const Admin = () => {
   const { user, isLoading } = useAuth();
@@ -26,7 +26,7 @@ const Admin = () => {
       }
 
       try {
-        // Check if user is admin by querying the subscribers table for admin subscriptions
+        // Check if user is admin by querying the subscribers table for premium subscriptions
         const { data, error } = await supabase
           .from("subscribers")
           .select("subscription_type, is_active")
@@ -48,6 +48,8 @@ const Admin = () => {
 
     if (user) {
       checkAdminStatus();
+    } else {
+      setIsAdminLoading(false);
     }
   }, [user]);
 
@@ -61,9 +63,20 @@ const Admin = () => {
     );
   }
 
-  // Redirect non-admin users
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  // Redirect non-authenticated users or non-admin users
+  if (!user || !isAdmin) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50 text-center p-4">
+        <ShieldAlert className="h-16 w-16 text-red-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+        <p className="text-gray-600 mb-4">
+          {!user 
+            ? "Please sign in to access this area." 
+            : "You don't have permission to access the admin dashboard."}
+        </p>
+        <Navigate to="/" replace />
+      </div>
+    );
   }
 
   return (

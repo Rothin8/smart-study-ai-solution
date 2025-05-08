@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useChat } from "@/contexts/ChatContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -10,13 +11,15 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
-  SidebarGroupContent
+  SidebarGroupContent,
+  SidebarFooter
 } from "@/components/ui/sidebar";
-import { MessageSquare, PlusCircle, ChevronRight } from "lucide-react";
+import { MessageSquare, PlusCircle, ChevronRight, LogOut } from "lucide-react";
 import ClassBoardSelector from "@/components/ClassBoardSelector";
 
 const ChatSidebar = () => {
   const { messages, selectedClass, selectedBoard, clearChat } = useChat();
+  const { signOut } = useAuth();
   const [showSelector, setShowSelector] = useState(true);
 
   // Group messages by date for chat history
@@ -30,6 +33,10 @@ const ChatSidebar = () => {
     }
     return groups;
   }, {});
+
+  const handleLogout = () => {
+    signOut();
+  };
 
   return (
     <Sidebar side="left" variant="sidebar" collapsible="icon">
@@ -101,6 +108,17 @@ const ChatSidebar = () => {
           </SidebarGroup>
         )}
       </SidebarContent>
+
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout} tooltip="Sign out" className="rounded-md text-red-500 hover:bg-red-50 hover:text-red-600">
+              <LogOut size={18} />
+              <span>Sign Out</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 };

@@ -7,12 +7,13 @@ import OrderHistory from "@/components/OrderHistory";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Button } from "@/components/ui/button";
-import { Calendar, CreditCard, User } from "lucide-react";
+import { Calendar, CreditCard, User, Shield } from "lucide-react";
 
 const Profile = () => {
   const { isAuthenticated, user, signOut } = useAuth();
   const { isSubscribed, subscriptionType, expiryDate } = useSubscription();
   const navigate = useNavigate();
+  const isAdmin = subscriptionType === "premium";
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -37,7 +38,7 @@ const Profile = () => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <main className="flex-grow py-12 px-6">
+      <main className="flex-grow py-12 px-6 bg-gray-50">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold mb-8">Your Account</h1>
@@ -47,8 +48,8 @@ const Profile = () => {
               <div className="space-y-6">
                 <div className="bg-white rounded-lg border shadow p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <div className="bg-chatbot/10 rounded-full p-2">
-                      <User className="h-5 w-5 text-chatbot" />
+                    <div className="bg-purple-100 rounded-full p-2">
+                      <User className="h-5 w-5 text-purple-600" />
                     </div>
                     <h2 className="text-lg font-semibold">Profile</h2>
                   </div>
@@ -59,7 +60,14 @@ const Profile = () => {
                       <p className="font-medium">{user.email}</p>
                     </div>
                     
-                    <div className="pt-2">
+                    {user.user_metadata?.name && (
+                      <div>
+                        <p className="text-sm text-gray-500">Name</p>
+                        <p className="font-medium">{user.user_metadata.name}</p>
+                      </div>
+                    )}
+                    
+                    <div className="pt-4">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -72,11 +80,37 @@ const Profile = () => {
                   </div>
                 </div>
 
+                {isAdmin && (
+                  <div className="bg-white rounded-lg border shadow p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="bg-amber-100 rounded-full p-2">
+                        <Shield className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <h2 className="text-lg font-semibold">Admin</h2>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <p className="text-sm">
+                        You have admin privileges. Access the admin dashboard to manage users and content.
+                      </p>
+                      
+                      <Button 
+                        variant="outline"
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => navigate("/admin")}
+                      >
+                        Admin Dashboard
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 {isSubscribed && (
                   <div className="bg-white rounded-lg border shadow p-6">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="bg-chatbot/10 rounded-full p-2">
-                        <Calendar className="h-5 w-5 text-chatbot" />
+                      <div className="bg-green-100 rounded-full p-2">
+                        <Calendar className="h-5 w-5 text-green-600" />
                       </div>
                       <h2 className="text-lg font-semibold">Subscription</h2>
                     </div>
@@ -100,7 +134,7 @@ const Profile = () => {
                       <div className="pt-2">
                         <Button 
                           size="sm" 
-                          className="w-full bg-chatbot hover:bg-chatbot/90"
+                          className="w-full bg-purple-600 hover:bg-purple-700"
                           onClick={() => navigate("/subscription")}
                         >
                           Manage Subscription
@@ -113,8 +147,8 @@ const Profile = () => {
                 {!isSubscribed && (
                   <div className="bg-white rounded-lg border border-dashed shadow p-6">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="bg-chatbot/10 rounded-full p-2">
-                        <Calendar className="h-5 w-5 text-chatbot" />
+                      <div className="bg-gray-100 rounded-full p-2">
+                        <Calendar className="h-5 w-5 text-gray-600" />
                       </div>
                       <h2 className="text-lg font-semibold">Subscription</h2>
                     </div>
@@ -124,7 +158,7 @@ const Profile = () => {
                         You don't have an active subscription
                       </p>
                       <Button 
-                        className="w-full bg-chatbot hover:bg-chatbot/90"
+                        className="w-full bg-purple-600 hover:bg-purple-700"
                         onClick={() => navigate("/subscription")}
                       >
                         View Plans
@@ -136,14 +170,16 @@ const Profile = () => {
 
               {/* Main content */}
               <div className="md:col-span-2">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="bg-chatbot/10 rounded-full p-2">
-                    <CreditCard className="h-5 w-5 text-chatbot" />
+                <div className="bg-white rounded-lg border shadow p-6">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="bg-blue-100 rounded-full p-2">
+                      <CreditCard className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <h2 className="text-lg font-semibold">Payment History</h2>
                   </div>
-                  <h2 className="text-lg font-semibold">Payment History</h2>
+                  
+                  <OrderHistory />
                 </div>
-                
-                <OrderHistory />
               </div>
             </div>
           </div>

@@ -7,9 +7,10 @@ import {
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { User } from "lucide-react";
+import { User, Home, Settings, LogOut } from "lucide-react";
 
 const AdminNavbar = () => {
   const { signOut, user } = useAuth();
@@ -19,7 +20,7 @@ const AdminNavbar = () => {
     <nav className="border-b bg-white py-4 shadow-sm">
       <div className="container flex items-center justify-between">
         <div className="flex items-center">
-          <Link to="/admin" className="mr-6">
+          <Link to="/admin" className="mr-6 flex items-center">
             <Logo size="medium" showTagline={false} />
             <span className="ml-2 text-xs font-bold uppercase text-purple-600">Admin</span>
           </Link>
@@ -47,17 +48,27 @@ const AdminNavbar = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link to="/profile" className="w-full cursor-pointer">
-                  Account
+                <Link to="/profile" className="flex w-full cursor-pointer items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Account</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/" className="w-full cursor-pointer">
-                  Main Site
+                <Link to="/" className="flex w-full cursor-pointer items-center">
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Main Site</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-                Sign Out
+              <DropdownMenuItem asChild>
+                <Link to="/admin?tab=settings" className="flex w-full cursor-pointer items-center">
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={signOut} className="cursor-pointer flex items-center text-red-500 hover:text-red-600 hover:bg-red-50">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Sign Out</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
