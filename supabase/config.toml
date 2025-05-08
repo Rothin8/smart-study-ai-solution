@@ -37,3 +37,12 @@ enabled = true
 
 [edge_functions]
 enabled = true
+
+[functions.get-admin-users]
+verify_jwt = true
+
+[functions.get-admin-orders]
+verify_jwt = true
+
+[functions.get-admin-analytics]
+verify_jwt = true

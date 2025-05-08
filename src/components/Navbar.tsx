@@ -2,6 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 import Logo from "@/components/Logo";
 import { 
   DropdownMenu, 
@@ -13,10 +14,12 @@ import { User } from "lucide-react";
 
 const Navbar = () => {
   const { isAuthenticated, signOut, user } = useAuth();
+  const { subscriptionType } = useSubscription();
   const location = useLocation();
   const isOnChatPage = location.pathname === "/chat";
   const isOnHomePage = location.pathname === "/";
   const isOnAuthPage = location.pathname === "/auth";
+  const isAdmin = subscriptionType === "premium";
 
   // Safely extract username from user_metadata or fall back to "User"
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || "User";
@@ -54,6 +57,13 @@ const Navbar = () => {
                     <DropdownMenuItem asChild>
                       <Link to="/chat" className="w-full cursor-pointer">
                         Chat
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="w-full cursor-pointer">
+                        Admin Dashboard
                       </Link>
                     </DropdownMenuItem>
                   )}
