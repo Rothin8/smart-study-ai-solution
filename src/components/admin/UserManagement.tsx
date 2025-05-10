@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { Search, MoreHorizontal, Loader2 } from "lucide-react";
-import { setUserAsAdmin } from "@/utils/adminUtils";
+import { setUserAsAdmin, removeUserAsAdmin } from "@/utils/adminUtils";
 
 type UserWithSubscription = {
   id: string;
@@ -104,6 +104,37 @@ const UserManagement = () => {
       fetchUsers();
     } catch (error) {
       console.error("Error making user admin:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update user privileges.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeAdmin = async (userId: string) => {
+    try {
+      const { success, error } = await removeUserAsAdmin(userId);
+      
+      if (!success) throw error;
+
+      // Update the users list
+      setUsers(users.map(user => {
+        if (user.id === userId) {
+          return { ...user, is_admin: false };
+        }
+        return user;
+      }));
+
+      toast({
+        title: "Success",
+        description: "Admin privileges have been removed from user.",
+      });
+      
+      // Refresh the list to get updated data
+      fetchUsers();
+    } catch (error) {
+      console.error("Error removing admin status:", error);
       toast({
         title: "Error",
         description: "Failed to update user privileges.",
@@ -198,12 +229,20 @@ const UserManagement = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => makeAdmin(user.id)}
-                            disabled={user.is_admin}
-                          >
-                            Make Admin
-                          </DropdownMenuItem>
+                          {!user.is_admin ? (
+                            <DropdownMenuItem
+                              onClick={() => makeAdmin(user.id)}
+                            >
+                              Make Admin
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem
+                              onClick={() => removeAdmin(user.id)}
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                            >
+                              Remove Admin
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

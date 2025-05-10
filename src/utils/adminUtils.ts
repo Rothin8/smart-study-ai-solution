@@ -22,6 +22,24 @@ export async function setUserAsAdmin(userId: string) {
 }
 
 /**
+ * Removes a user from admin status by deleting them from the admin_users table
+ */
+export async function removeUserAsAdmin(userId: string) {
+  try {
+    const { error } = await supabase
+      .from("admin_users")
+      .delete()
+      .eq("id", userId);
+      
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing admin status:", error);
+    return { success: false, error };
+  }
+}
+
+/**
  * Checks if the current logged-in user is an admin
  */
 export async function checkIfUserIsAdmin(userId: string | undefined) {
