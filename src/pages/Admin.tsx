@@ -11,6 +11,7 @@ import OrderManagement from "@/components/admin/OrderManagement";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminSettings from "@/components/admin/AdminSettings";
 import { Loader2, ShieldAlert } from "lucide-react";
+import { checkIfUserIsAdmin } from "@/utils/adminUtils";
 
 const Admin = () => {
   const { user, isLoading } = useAuth();
@@ -27,18 +28,8 @@ const Admin = () => {
       }
 
       try {
-        // Check if user is admin by querying the subscribers table for premium subscriptions
-        const { data, error } = await supabase
-          .from("subscribers")
-          .select("subscription_type, is_active")
-          .eq("user_id", user.id)
-          .eq("is_active", true)
-          .maybeSingle();
-        
-        if (error) throw error;
-        
-        // Admin role is determined by having a premium subscription
-        setIsAdmin(data?.subscription_type === "premium" && data?.is_active);
+        const isUserAdmin = await checkIfUserIsAdmin(user.id);
+        setIsAdmin(isUserAdmin);
       } catch (error) {
         console.error("Error checking admin status:", error);
         setIsAdmin(false);

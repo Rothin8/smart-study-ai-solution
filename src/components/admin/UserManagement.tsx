@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { Search, MoreHorizontal, Loader2 } from "lucide-react";
+import { setUserAsAdmin } from "@/utils/adminUtils";
 
 type UserWithSubscription = {
   id: string;
@@ -27,6 +28,7 @@ type UserWithSubscription = {
   last_sign_in_at: string | null;
   subscription_type: string | null;
   is_active: boolean | null;
+  is_admin?: boolean;
 };
 
 const UserManagement = () => {
@@ -48,8 +50,24 @@ const UserManagement = () => {
       
       if (error) throw error;
       
+      // Check if users are admins
       if (data && Array.isArray(data.users)) {
-        setUsers(data.users);
+        // Fetch admin users
+        const { data: adminData, error: adminError } = await supabase
+          .from("admin_users")
+          .select("id");
+          
+        if (adminError) throw adminError;
+        
+        const adminIds = new Set((adminData || []).map((admin: any) => admin.id));
+        
+        // Mark admin users
+        const usersWithAdminStatus = data.users.map((user: UserWithSubscription) => ({
+          ...user,
+          is_admin: adminIds.has(user.id)
+        }));
+        
+        setUsers(usersWithAdminStatus);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -65,26 +83,14 @@ const UserManagement = () => {
 
   const makeAdmin = async (userId: string) => {
     try {
-      // Set user as premium subscriber (which makes them admin in our system)
-      const endDate = new Date();
-      endDate.setFullYear(endDate.getFullYear() + 10); // 10 years admin access
-
-      const { error } = await supabase
-        .from("subscribers")
-        .upsert({
-          user_id: userId,
-          subscription_type: "premium",
-          is_active: true,
-          end_date: endDate.toISOString(),
-          auto_renew: true
-        }, { onConflict: "user_id" });
-
-      if (error) throw error;
+      const { success, error } = await setUserAsAdmin(userId);
+      
+      if (!success) throw error;
 
       // Update the users list
       setUsers(users.map(user => {
         if (user.id === userId) {
-          return { ...user, subscription_type: "premium", is_active: true };
+          return { ...user, is_admin: true };
         }
         return user;
       }));
@@ -93,6 +99,9 @@ const UserManagement = () => {
         title: "Success",
         description: "User has been granted admin privileges.",
       });
+      
+      // Refresh the list to get updated data
+      fetchUsers();
     } catch (error) {
       console.error("Error making user admin:", error);
       toast({
@@ -142,6 +151,7 @@ const UserManagement = () => {
                 <TableHead>Last Login</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Subscription</TableHead>
+                <TableHead>Admin</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -173,6 +183,13 @@ const UserManagement = () => {
                           : 'None'}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        user.is_admin ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {user.is_admin ? 'Yes' : 'No'}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -183,7 +200,7 @@ const UserManagement = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => makeAdmin(user.id)}
-                            disabled={user.subscription_type === 'premium' && user.is_active}
+                            disabled={user.is_admin}
                           >
                             Make Admin
                           </DropdownMenuItem>
@@ -194,7 +211,7 @@ const UserManagement = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No users found.
                   </TableCell>
                 </TableRow>
