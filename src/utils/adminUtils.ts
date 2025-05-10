@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 /**
  * Sets a user as an admin by adding them to the admin_users table
