@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +16,7 @@ const Admin = () => {
   const { user, isLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isAdminLoading, setIsAdminLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -48,10 +49,10 @@ const Admin = () => {
 
     if (user) {
       checkAdminStatus();
-    } else {
+    } else if (!isLoading) {
       setIsAdminLoading(false);
     }
-  }, [user]);
+  }, [user, isLoading]);
 
   // Show loading indicator while checking authentication and admin status
   if (isLoading || isAdminLoading) {
@@ -74,7 +75,7 @@ const Admin = () => {
             ? "Please sign in to access this area." 
             : "You don't have permission to access the admin dashboard."}
         </p>
-        <Navigate to="/" replace />
+        {setTimeout(() => navigate("/"), 2000) && null}
       </div>
     );
   }

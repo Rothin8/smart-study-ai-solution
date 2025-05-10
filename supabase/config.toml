@@ -46,3 +46,6 @@ verify_jwt = true
 
 [functions.get-admin-analytics]
 verify_jwt = true
+
+[functions.get-user-data]
+verify_jwt = true
