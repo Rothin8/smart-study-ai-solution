@@ -5,11 +5,17 @@ import Logo from "@/components/Logo";
 import NavbarUserMenu from "@/components/NavbarUserMenu";
 
 const Navbar = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const location = useLocation();
   const isOnChatPage = location.pathname === "/chat";
   const isOnHomePage = location.pathname === "/";
   const isOnAuthPage = location.pathname === "/auth";
+  const isOnAdminPage = location.pathname === "/admin";
+
+  // Don't show navbar on admin page
+  if (isOnAdminPage) {
+    return null;
+  }
 
   return (
     <nav className="bg-white py-4 px-6 shadow-sm">
@@ -17,6 +23,15 @@ const Navbar = () => {
         <Logo size={isOnChatPage ? "large" : "medium"} showTagline={!isOnChatPage} />
         
         <div className="flex items-center space-x-4">
+          {isAdmin && (
+            <Link 
+              to="/admin"
+              className="text-sm font-medium text-purple-600 hover:text-purple-800 mr-4"
+            >
+              Admin Dashboard
+            </Link>
+          )}
+          
           {/* Only show sign in/sign up on non-home and non-auth pages if not authenticated */}
           {!isAuthenticated && !isOnHomePage && !isOnAuthPage && (
             <NavbarUserMenu />

@@ -1,150 +1,100 @@
 
 import { useState } from "react";
-import { MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { setUserAsAdmin, removeUserAsAdmin } from "@/utils/adminUtils";
-
-type UserWithSubscription = {
-  id: string;
-  email: string;
-  created_at: string;
-  last_sign_in_at: string | null;
-  subscription_type: string | null;
-  is_active: boolean | null;
-  is_admin?: boolean;
-};
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserTableRowProps {
-  user: UserWithSubscription;
-  onUserUpdated: () => void;
+  user: {
+    id: string;
+    email: string;
+    created_at: string;
+    last_sign_in_at: string | null;
+    subscription_type: string | null;
+    is_active: boolean | null;
+    is_admin?: boolean;
+  };
+  refreshUsers: () => void;
 }
 
-const UserTableRow = ({ user, onUserUpdated }: UserTableRowProps) => {
+export default function UserTableRow({ user, refreshUsers }: UserTableRowProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const makeAdmin = async (userId: string) => {
-    try {
-      setIsUpdating(true);
-      const { success, error } = await setUserAsAdmin(userId);
-      
-      if (!success) throw error;
-
-      toast({
-        title: "Success",
-        description: "User has been granted admin privileges.",
-      });
-      
-      // Refresh the list to get updated data
-      onUserUpdated();
-    } catch (error) {
-      console.error("Error making user admin:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update user privileges.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
+  
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "Never";
+    return new Date(dateString).toLocaleDateString();
   };
 
-  const removeAdmin = async (userId: string) => {
+  const handleAdminStatusChange = async () => {
+    setIsLoading(true);
     try {
-      setIsUpdating(true);
-      const { success, error } = await removeUserAsAdmin(userId);
+      let result;
       
-      if (!success) throw error;
-
-      toast({
-        title: "Success",
-        description: "Admin privileges have been removed from user.",
-      });
+      if (user.is_admin) {
+        result = await removeUserAsAdmin(user.id);
+        if (result.success) {
+          toast({
+            title: "Admin access removed",
+            description: `Admin access has been removed for ${user.email}`
+          });
+        }
+      } else {
+        result = await setUserAsAdmin(user.id);
+        if (result.success) {
+          toast({
+            title: "Admin access granted",
+            description: `Admin access has been granted to ${user.email}`
+          });
+        }
+      }
       
-      // Refresh the list to get updated data
-      onUserUpdated();
-    } catch (error) {
-      console.error("Error removing admin status:", error);
+      // Refresh the user list
+      refreshUsers();
+      
+    } catch (error: any) {
       toast({
         title: "Error",
-        description: "Failed to update user privileges.",
-        variant: "destructive",
+        description: error.message || "Failed to update admin status",
+        variant: "destructive"
       });
     } finally {
-      setIsUpdating(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <TableRow key={user.id}>
+    <TableRow>
       <TableCell className="font-medium">{user.email}</TableCell>
-      <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+      <TableCell>{formatDate(user.created_at)}</TableCell>
+      <TableCell>{formatDate(user.last_sign_in_at)}</TableCell>
       <TableCell>
-        {user.last_sign_in_at 
-          ? new Date(user.last_sign_in_at).toLocaleDateString() 
-          : 'Never'}
+        {user.subscription_type ? (
+          <Badge variant="outline" className="capitalize">{user.subscription_type}</Badge>
+        ) : (
+          <span className="text-gray-400">None</span>
+        )}
       </TableCell>
       <TableCell>
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          user.last_sign_in_at ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {user.last_sign_in_at ? 'Active' : 'Inactive'}
-        </span>
+        {user.is_admin ? (
+          <Badge className="bg-purple-600">Admin</Badge>
+        ) : (
+          <span className="text-gray-400">User</span>
+        )}
       </TableCell>
       <TableCell>
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          user.subscription_type === 'premium' ? 'bg-purple-100 text-purple-800' : 
-          user.subscription_type === 'basic' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-        }`}>
-          {user.subscription_type && user.is_active 
-            ? user.subscription_type.charAt(0).toUpperCase() + user.subscription_type.slice(1) 
-            : 'None'}
-        </span>
-      </TableCell>
-      <TableCell>
-        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-          user.is_admin ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-        }`}>
-          {user.is_admin ? 'Yes' : 'No'}
-        </span>
-      </TableCell>
-      <TableCell className="text-right">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" disabled={isUpdating}>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {!user.is_admin ? (
-              <DropdownMenuItem
-                onClick={() => makeAdmin(user.id)}
-                disabled={isUpdating}
-              >
-                Make Admin
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                onClick={() => removeAdmin(user.id)}
-                className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                disabled={isUpdating}
-              >
-                Remove Admin
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button 
+          size="sm" 
+          variant={user.is_admin ? "destructive" : "outline"} 
+          onClick={handleAdminStatusChange}
+          disabled={isLoading}
+        >
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (user.is_admin ? "Remove Admin" : "Make Admin")}
+        </Button>
       </TableCell>
     </TableRow>
   );
-};
-
-export default UserTableRow;
+}

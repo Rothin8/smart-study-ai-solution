@@ -1,5 +1,4 @@
 
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +8,7 @@ import UserManagement from "@/components/admin/UserManagement";
 import OrderManagement from "@/components/admin/OrderManagement";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminSettings from "@/components/admin/AdminSettings";
+import AdminUserRoles from "@/components/admin/AdminUserRoles";
 import { Loader2, ShieldAlert } from "lucide-react";
 
 const Admin = () => {
@@ -48,11 +48,12 @@ const Admin = () => {
         <h1 className="mb-6 text-3xl font-bold">Admin Dashboard</h1>
         
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="mb-6 grid w-full grid-cols-4">
+          <TabsList className="mb-6 grid w-full grid-cols-5">
             <TabsTrigger value="users">User Management</TabsTrigger>
             <TabsTrigger value="orders">Orders & Subscriptions</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="admin-roles">Admin Roles</TabsTrigger>
           </TabsList>
           
           <Card className="p-6">
@@ -70,6 +71,10 @@ const Admin = () => {
             
             <TabsContent value="settings">
               <AdminSettings />
+            </TabsContent>
+            
+            <TabsContent value="admin-roles">
+              <AdminUserRoles />
             </TabsContent>
           </Card>
         </Tabs>
