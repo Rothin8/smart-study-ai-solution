@@ -12,9 +12,8 @@ import {
 import { User } from "lucide-react";
 
 const NavbarUserMenu = () => {
-  const { isAuthenticated, signOut, user } = useAuth();
+  const { isAuthenticated, signOut, user, isAdmin } = useAuth();
   const { subscriptionType } = useSubscription();
-  const isAdmin = subscriptionType === "premium";
   const displayName = user?.user_metadata?.name || user?.email?.split('@')[0] || "User";
 
   if (!isAuthenticated) {

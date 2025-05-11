@@ -4,6 +4,8 @@ import { Session, User } from '@supabase/supabase-js';
 export type AuthContextType = {
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
+  isAdminLoading: boolean;
   user: User | null;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;

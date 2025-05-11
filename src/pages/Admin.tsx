@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import AdminNavbar from "@/components/AdminNavbar";
@@ -11,39 +10,10 @@ import OrderManagement from "@/components/admin/OrderManagement";
 import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminSettings from "@/components/admin/AdminSettings";
 import { Loader2, ShieldAlert } from "lucide-react";
-import { checkIfUserIsAdmin } from "@/utils/adminUtils";
 
 const Admin = () => {
-  const { user, isLoading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [isAdminLoading, setIsAdminLoading] = useState(true);
+  const { user, isAuthenticated, isLoading, isAdmin, isAdminLoading } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user) {
-        setIsAdmin(false);
-        setIsAdminLoading(false);
-        return;
-      }
-
-      try {
-        const isUserAdmin = await checkIfUserIsAdmin(user.id);
-        setIsAdmin(isUserAdmin);
-      } catch (error) {
-        console.error("Error checking admin status:", error);
-        setIsAdmin(false);
-      } finally {
-        setIsAdminLoading(false);
-      }
-    };
-
-    if (user) {
-      checkAdminStatus();
-    } else if (!isLoading) {
-      setIsAdminLoading(false);
-    }
-  }, [user, isLoading]);
 
   // Show loading indicator while checking authentication and admin status
   if (isLoading || isAdminLoading) {
@@ -56,13 +26,13 @@ const Admin = () => {
   }
 
   // Redirect non-authenticated users or non-admin users
-  if (!user || !isAdmin) {
+  if (!isAuthenticated || !isAdmin) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-gray-50 text-center p-4">
         <ShieldAlert className="h-16 w-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
         <p className="text-gray-600 mb-4">
-          {!user 
+          {!isAuthenticated 
             ? "Please sign in to access this area." 
             : "You don't have permission to access the admin dashboard."}
         </p>

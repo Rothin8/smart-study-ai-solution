@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthToasts } from "@/hooks/useAuthToasts";
 import { useSessionManager } from "@/hooks/useSessionManager";
 import {
@@ -10,10 +10,13 @@ import {
   verifyPhoneOTP,
   resetUserPassword
 } from "@/utils/authUtils";
+import { checkIfUserIsAdmin } from "@/utils/adminUtils";
 
 export function useAuthProvider() {
   const { user, session, isLoading } = useSessionManager();
   const [phoneForOTP, setPhoneForOTP] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isAdminLoading, setIsAdminLoading] = useState<boolean>(true);
   const {
     showSignInSuccess,
     showSignUpSuccess,
@@ -22,6 +25,29 @@ export function useAuthProvider() {
     showOTPSent,
     showAuthError
   } = useAuthToasts();
+
+  // Check if user is admin when user changes
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (user) {
+        setIsAdminLoading(true);
+        try {
+          const adminStatus = await checkIfUserIsAdmin(user.id);
+          setIsAdmin(adminStatus);
+        } catch (error) {
+          console.error("Error checking admin status:", error);
+          setIsAdmin(false);
+        } finally {
+          setIsAdminLoading(false);
+        }
+      } else {
+        setIsAdmin(false);
+        setIsAdminLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -110,6 +136,8 @@ export function useAuthProvider() {
   return {
     isAuthenticated: !!user,
     isLoading,
+    isAdmin,
+    isAdminLoading,
     user,
     session,
     signIn,
