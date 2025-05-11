@@ -4,7 +4,8 @@ import {
   TableBody, 
   TableHead, 
   TableHeader, 
-  TableRow 
+  TableRow,
+  TableCell
 } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
 import UserTableRow from "./UserTableRow";
