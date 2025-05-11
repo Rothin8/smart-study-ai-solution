@@ -1,10 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { Table, TableHeader, TableRow, TableHead, TableBody } from "@/components/ui/table";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import UserTableRow from "./UserTableRow";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import { TableCell } from "@/components/ui/table";
 
 interface User {
   id: string;
@@ -17,54 +16,13 @@ interface User {
 }
 
 interface UserTableProps {
-  searchQuery: string;
+  users: User[];
+  loading: boolean;
+  onUserUpdated: () => void;
 }
 
-export default function UserTable({ searchQuery }: UserTableProps) {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      // Fetch users from the edge function
-      const { data: responseData, error } = await supabase.functions.invoke('get-admin-users');
-
-      if (error) throw error;
-
-      const userData = responseData?.users || [];
-      
-      // Fetch admin users to check which users are admins
-      const { data: adminUsers, error: adminError } = await supabase
-        .from('admin_users')
-        .select('id');
-
-      if (adminError) throw adminError;
-
-      // Mark admin users
-      const adminIds = adminUsers?.map(admin => admin.id) || [];
-      const usersWithAdminStatus = userData.map((user: User) => ({
-        ...user,
-        is_admin: adminIds.includes(user.id)
-      }));
-
-      setUsers(usersWithAdminStatus);
-    } catch (err: any) {
-      console.error("Error fetching users:", err);
-      setError(err.message || "Failed to fetch users");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const filteredUsers = users.filter(user => 
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+export default function UserTable({ users, loading, onUserUpdated }: UserTableProps) {
+  const [searchTerm, setSearchTerm] = useState("");
 
   if (loading) {
     return (
@@ -75,19 +33,10 @@ export default function UserTable({ searchQuery }: UserTableProps) {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-8 text-center">
-        <p className="text-red-500 mb-2">Error: {error}</p>
-        <button 
-          onClick={fetchUsers}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
+  // Filter users based on search term
+  const filteredUsers = users.filter(user => 
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="rounded-md border overflow-hidden">
@@ -105,7 +54,7 @@ export default function UserTable({ searchQuery }: UserTableProps) {
         <TableBody>
           {filteredUsers.length > 0 ? (
             filteredUsers.map((user) => (
-              <UserTableRow key={user.id} user={user} refreshUsers={fetchUsers} />
+              <UserTableRow key={user.id} user={user} refreshUsers={onUserUpdated} />
             ))
           ) : (
             <TableRow>
